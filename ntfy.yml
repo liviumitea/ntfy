@@ -24,13 +24,18 @@ spec:
         - containerPort: 80
           name: http
         volumeMounts:
-        - name: config
-          mountPath: "/etc/ntfy"
-          readOnly: true
+            - mountPath: /etc/ntfy/server.yml
+              subPath: server.yml
+              name: config-volume # generated vie configMapGenerator from kustomization file
+            - mountPath: /var/cache/ntfy
+              name: cache-volume #cache volume mounted to persistent volume
       volumes:
-        - name: config
-          configMap:
-            name: ntfy
+        - name: config-volume
+          configMap:  # uses configmap generator to parse server.yml to configmap
+            name: server-config
+        - name: cache-volume
+          persistentVolumeClaim: # stores /cache/ntfy in defined pv
+            claimName: ntfy-pvc
 ---
 # Basic service for port 80
 apiVersion: v1
